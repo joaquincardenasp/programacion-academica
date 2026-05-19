@@ -506,6 +506,11 @@ def cargar_datos(ruta_maestro: str, ruta_salas: str) -> DatosProblema:
         # se infiere de las horas programables: si tiene horas de clase,
         # se crea una sección CLAS; si tiene horas de ayudantía, AYUD; etc.
         numero_seccion = safe_int(row.get("SECCIONES", 1))
+        # Algunos LLAVEs no incluyen el número de sección al final (ej: "FRM2100"
+        # en vez de "FRM210031"). Incorporar el valor de SECCIONES al ID garantiza
+        # unicidad global sin depender del formato del LLAVE.
+        seccion_str = safe_str(row.get("SECCIONES", "")) or str(numero_seccion)
+        sec_id_base = f"{llave}_{seccion_str}"
         
         # Sección de CLASE
         horas_clase = safe_int(row.get("Clases", 0))
@@ -518,7 +523,7 @@ def cargar_datos(ruta_maestro: str, ruta_salas: str) -> DatosProblema:
                     sala_clase = curso_obj.sala_especial
             
             secciones.append(Seccion(
-                id=f"{llave}_CLAS",
+                id=f"{sec_id_base}_CLAS",
                 nrc=nrc,
                 curso=curso_obj,
                 numero_seccion=numero_seccion,
@@ -532,7 +537,7 @@ def cargar_datos(ruta_maestro: str, ruta_salas: str) -> DatosProblema:
         horas_ayud = safe_int(row.get("Ayudantías", 0))
         if horas_ayud > 0:
             secciones.append(Seccion(
-                id=f"{llave}_AYUD",
+                id=f"{sec_id_base}_AYUD",
                 nrc=nrc,
                 curso=curso_obj,
                 numero_seccion=numero_seccion,
@@ -551,7 +556,7 @@ def cargar_datos(ruta_maestro: str, ruta_salas: str) -> DatosProblema:
                     sala_lab = curso_obj.sala_especial
             
             secciones.append(Seccion(
-                id=f"{llave}_LABT",
+                id=f"{sec_id_base}_LABT",
                 nrc=nrc,
                 curso=curso_obj,
                 numero_seccion=numero_seccion,
